@@ -3,16 +3,27 @@
 #[unsafe(no_mangle)]
 pub static mut NEARCORE_GAS: u64 = 0;
 
+/// Gas cost of a regular operation.
+#[unsafe(no_mangle)]
+pub static REGULAR_OP_COST: u32 = 1;
+
+/// Stores the amount of stack space remaining
+#[unsafe(no_mangle)]
+pub static mut REMAINING_STACK: u64 = 0;
+
 // The host-provided implementation of `nearcore_gas_exhausted`
 // Will be called if gas is exhausted.
-#[link(wasm_import_module = "hostfunc")]
+#[link(wasm_import_module = "nearcore")]
 unsafe extern "C" {
     #[link_name="nearcore_gas_exhausted"]
     fn nearcore_gas_exhausted(overflow: u64);
     #[link_name="nearcore_params_overflowed"]
     fn nearcore_params_overflowed(count: u32, linear: u64, constant: u64);
+    #[link_name="nearcore_stack_exhausted"]
+    fn nearcore_stack_exhausted(overflow: u64);
+    #[link_name="nearcore_unstack_overflowed"]
+    fn nearcore_unstack_overflowed(overflow: u64);
 }
-
 
 /// Deduct the NEARCORE_GAS global by the passed amount.
 /// Fast case: The operation does not overflow and the remaining gas
@@ -124,16 +135,18 @@ pub fn finite_wasm_stack(
     operand_size: u64,
     frame_size: u64,
 ) {
-    // let ctx = caller.data_mut();
-    // ctx.remaining_stack =
-    //     match ctx.remaining_stack.checked_sub(operand_size.saturating_add(frame_size)) {
-    //         Some(s) => s,
-    //         None => return Err(VMLogicError::HostError(HostError::MemoryAccessViolation)),
-    //     };
-    // let gas = ((frame_size + 7) / 8) * u64::from(ctx.config.regular_op_cost);
-    // consume_gas(&mut ctx.result_state.gas_counter, gas)?;
-    // Ok(())
-    todo!()
+    unsafe {
+        let total_used = operand_size.saturating_add(frame_size);
+        let (res, overflowed) = REMAINING_STACK.overflowing_sub(total_used);
+        if overflowed {
+            nearcore_stack_exhausted(total_used - REMAINING_STACK);
+        } else {
+            REMAINING_STACK = res;
+        }
+    }
+
+    let gas = ((frame_size + 7) / 8) * u64::from(REGULAR_OP_COST);
+    consume_gas(gas);
 }
 
 #[unsafe(no_mangle)]
@@ -141,13 +154,17 @@ pub fn finite_wasm_unstack(
     operand_size: u64,
     frame_size: u64,
 ) {
-    // let ctx = caller.data_mut();
-    // ctx.remaining_stack = ctx
-    //     .remaining_stack
-    //     .checked_add(operand_size.saturating_add(frame_size))
-    //     .expect("remaining stack integer overflow");
-    // Ok(())
-    todo!()
+    unsafe {
+        let total_replaced = operand_size.saturating_add(frame_size);
+        let (res, overflowed) = REMAINING_STACK.overflowing_add(total_replaced);
+        if overflowed {
+            // (a + b) wrapped around; so amount = b - (MAX - a + 1)
+            let overflow = total_replaced - (u64::MAX - REMAINING_STACK + 1);
+            nearcore_unstack_overflowed(overflow);
+        } else {
+            REMAINING_STACK = res;
+        }
+    }
 }
 
 #[cfg(test)]
@@ -255,5 +272,10 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn wasm_stack() {
+        todo!()
     }
 }
