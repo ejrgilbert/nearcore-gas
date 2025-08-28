@@ -1,7 +1,18 @@
 # HostModule for Gas Instrumentation #
 
-To build:
+## Handwritten Implementation ##
+
+Located at `handwritten/gas_hostmodule.wat`.
+
+Tests are written in WAST, located in `handwritten/tests/` and can be run via:
+```bash
+./handwritten/test.sh
 ```
-# Compiles to: target/wasm32-wasip1/debug/gas_hostmodule.wat
-cargo build --target wasm32-wasip1 
+
+## Rust Implementation ##
+
+For the Rust implementation, to build:
+```
+# Compiles to: target/wasm32-unknown-unknown/debug/gas_hostmodule.wat
+cargo build --target wasm32-unknown-unknown 
 ```

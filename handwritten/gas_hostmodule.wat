@@ -21,14 +21,14 @@
     ;; The maximum value for a u64.
     (global $U64_MAX i64 (i64.const 18_446_744_073_709_551_615))
     ;; The amount of stack remaining for use (represents a u64).
-    (global $REMAINING_STACK (mut i64) (i64.const 0))
+    (global $REMAINING_STACK (mut i64) (i64.const 10))
 
     ;; ==============================
     ;; ==== HOST-MANAGED Globals ====
     ;; ==============================
 
     ;; The amount of gas left for this execution (represents a u64).
-    (global $GAS (mut i64) (i64.const 0))
+    (global $GAS (mut i64) (i64.const 10))
     (export "nearcore_gas" (global $GAS))
 
     ;; ==================
