@@ -5,11 +5,11 @@ pub static mut NEARCORE_GAS: u64 = 0;
 
 /// Gas cost of a regular operation.
 #[unsafe(no_mangle)]
-pub static REGULAR_OP_COST: u32 = 1;
+static REGULAR_OP_COST: u32 = 1;
 
 /// Stores the amount of stack space remaining
 #[unsafe(no_mangle)]
-pub static mut REMAINING_STACK: u64 = 0;
+static mut REMAINING_STACK: u64 = 0;
 
 // The host-provided implementation of `nearcore_gas_exhausted`
 // Will be called if gas is exhausted.
