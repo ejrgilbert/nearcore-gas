@@ -244,7 +244,7 @@
     )
 
     ;; checked_mul: multiply two u64s with overflow check
-    ;; Returns: (product: i64, ok: i32)
+    ;; Returns: (product: i64, wrapped: i32)
     (func $checked_mul_u64 (param $a i64) (param $b i64) (result i64 i32)
         (local $res i64)
         (local $ok i32)
@@ -261,25 +261,25 @@
         (if (result i64 i32)
             (then
                 local.get $res
-                i32.const 1
-                ;; return (res, ok)
+                i32.const 0
+                ;; return (res, wrapped)
             )
             (else
                 local.get $res
 
-                ;; check (res / b == a)
+                ;; check (res / b != a)
                 local.get $res
                 local.get $b
                 i64.div_u
                 local.get $a
-                i64.eq
-                ;; return (res, ok)
+                i64.ne
+                ;; return (res, wrapped)
             )
         )
     )
 
     ;; checked_add: add two u64s with overflow check
-    ;; Returns: (sum: i64, ok: i32)
+    ;; Returns: (sum: i64, wrapped: i32)
     (func $checked_add_u64 (param $a i64) (param $b i64) (result i64 i32)
         (local $sum i64)
         ;; compute sum
@@ -292,9 +292,9 @@
 
         ;; returns (sum,ok)
         local.get $sum
-        ;; ok = (sum >= a)
+        ;; wrapped = (sum < a)
         local.get $a
-        i64.ge_u
+        i64.lt_u
     )
 
     ;; saturating_add: add two u64s, if overflow return max

@@ -51,7 +51,7 @@ function merge() {
     error_exit "Failed to print $module_file into the target $out_file"
   fi
 
-  if ! printf "\n\n;; START WAST TESTS\n\n" >>"${out_file}"; then
+  if ! printf "\n(register \"near_gas\")\n\n;; START WAST TESTS\n\n" >>"${out_file}"; then
     error_exit "Failed to print newlines into the target $out_file"
   fi
 
