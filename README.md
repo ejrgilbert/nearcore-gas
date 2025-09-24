@@ -2,11 +2,11 @@
 
 ## Handwritten Implementation ##
 
-Located at `handwritten/gas_hostmodule.wat`.
+Located at `as_library/handwritten/gas_hostmodule.wat`.
 
-Tests are written in WAST, located in `handwritten/tests/` and can be run via:
+Tests are written in WAST, located in `as_library/handwritten/tests/` and can be run via:
 ```bash
-./handwritten/test.sh
+./as_library/handwritten/test.sh
 ```
 
 ## Rust Implementation ##
